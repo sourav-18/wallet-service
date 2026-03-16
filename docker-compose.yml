@@ -1,0 +1,43 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: wallet-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: wallet
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5430:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql
+
+  redis:
+    image: redis:latest
+    container_name: wallet-redis
+    restart: always
+    ports:
+      - "6370:6379"
+    volumes:
+      - redis-data:/data
+
+  app:
+    build: .
+    container_name: wallet-app
+    depends_on:
+      - postgres
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/wallet
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: password
+
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+
+volumes:
+  postgres-data:
+  redis-data:
